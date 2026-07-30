@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"name": "BLDC Controller",
+			"path": ".."
+		}
+	],
+	"settings": {}
+}
