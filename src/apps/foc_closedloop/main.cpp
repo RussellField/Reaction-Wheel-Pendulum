@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include "serial_setup.h"
 
 #include <SimpleFOC.h>
 
@@ -8,15 +8,12 @@ BLDCMotor motor = BLDCMotor(7);
 
 BLDCDriver3PWM driver = BLDCDriver3PWM(5, 6, 3, 8);
 
-
 // instantiate the commander
 Commander command = Commander(Serial);
 void doMotor(char* cmd) { command.motor(&motor, cmd); }
 
-void setup() { 
-  
-  // use monitoring with serial 
-  Serial.begin(115200);
+void setup() {
+  serialSetup(APP_NAME_STR);
   // enable more verbose output for debugging
   // comment out if not needed
   SimpleFOCDebug::enable(&Serial);
