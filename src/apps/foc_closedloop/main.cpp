@@ -58,11 +58,23 @@ void setup() {
   // set the initial motor target
   motor.target = 2; // Volts 
 
+  motor.PID_velocity.P = 0.05f;    // default is 0.5 — start 10x lower
+  motor.PID_velocity.I = 1.0f;     // default is 10
+  motor.PID_velocity.D = 0.0f;     // leave at zero
+  motor.PID_velocity.output_ramp = 200;   // V/s, limits di/dt
+  motor.LPF_velocity.Tf = 0.02f;   // default 0.005 — more filtering
+  motor.voltage_limit = 3.0f;      // keep low while tuning
+  motor.phase_resistance = 6.0f;   // measure yours
+  motor.current_limit = 2.0f;
+
   // add target command M
   command.add('M', doMotor, "Motor");
 
   Serial.println(F("Motor ready."));
-  Serial.println(F("Set the target using serial terminal and command M:"));
+  Serial.println(F("Enter MC0 for torque control"));
+  Serial.println(F("Enter MC1 for velocity control"));
+  Serial.println(F("Enter MC2 for angle control"));
+  Serial.println(F("Within each mode enter M and an integer value to set the target"));
   _delay(1000);
 }
 
@@ -75,4 +87,11 @@ void loop() {
 
   // user communication
   command.run();
+
+  //test control frequency
+  //static uint32_t n = 0; static uint32_t t0 = millis();
+  //if (++n >= 1000) {
+  //Serial.print("loop Hz: "); Serial.println(1000000.0f / (millis() - t0));
+  //n = 0; t0 = millis();
+  //}
 }

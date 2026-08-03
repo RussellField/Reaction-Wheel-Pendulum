@@ -25,8 +25,10 @@ void loop() {
   sensor5600.update();
   sensor5047.update();
   // display the angle and the angular velocity to the terminal
-  Serial.print(F("AS5600 reads: "));
+  Serial.print(F("AS5600 angle: "));
   Serial.print(sensor5600.getAngle());
-  Serial.print(F(" AS5047 reads: "));       
+  Serial.print(F(" AS5600 velocity: "));
+  Serial.print(sensor5600.getVelocity());
+  Serial.print(F(" AS5047 angle: "));       
   Serial.println(sensor5047.getAngle());
 }
