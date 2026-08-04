@@ -25,14 +25,14 @@ float controllerLQR(float p_angle, float p_vel, float m_vel){
   // if angle controllable
   // calculate the control law 
   // LQR controller u = k*x
-  //  - k = [40, 7, 0.3]
+  //  - k = [70, 7, 0.3]
   //  - x = [pendulum angle, pendulum velocity, motor velocity]' 
-  float u =  40*p_angle + 7*p_vel + 0.3*m_vel;
+  float u =  200*p_angle + 7*p_vel + 0.3*m_vel;
   
   // limit the voltage set to the motor
   if(abs(u) > motor.voltage_limit*0.7) u = _sign(u)*motor.voltage_limit*0.7;
   
-  return u;
+  return -u;
 }
 
 
@@ -49,7 +49,6 @@ void setup() {
   
   // init the pendulum encoder
   pendulum.init();
-  angle_offset = pendulum.getAngle() + M_PI; // set the zero position of the pendulum to be at the bottom
   
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
@@ -65,9 +64,16 @@ void setup() {
 
   // initialize motor
   motor.init();
+
+  motor.voltage_limit = 10; // limit the voltage set to the motor to 10V
+
   // align encoder and start FOC
   motor.initFOC();
   
+  delay(1000);
+  angle_offset = pendulum.getAngle() + M_PI; // set the zero position of the pendulum to be at the bottom
+  delay(1000);
+
 }
 
 
@@ -79,9 +85,9 @@ void loop() {
   
   // ~1ms 
   motor.loopFOC();
-
-  // control loop each ~25ms
-  if(loop_count++ > 25){
+  loop_count++;
+  // control loop each 10ms
+  if(loop_count > 10){
     // updating the pendulum angle sensor
     // NECESSARY for library versions > v2.2 
     pendulum.update();
@@ -89,22 +95,25 @@ void loop() {
     float pendulum_angle = constrainAngle(pendulum.getAngle() - angle_offset);
 
     float target_voltage;
-    if( abs(pendulum_angle) < 0.5 ) // if angle small enough stabilize
+    if( abs(pendulum_angle) < 0.8 ) // if angle small enough stabilize
       target_voltage = controllerLQR(pendulum_angle, pendulum.getVelocity(), motor.shaftVelocity());
     else // else do swing-up
-      // sets 40% of the maximal voltage to the motor in order to swing up
-      target_voltage = -_sign(pendulum.getVelocity())*motor.voltage_limit*0.4;
+      
+      target_voltage = _sign(pendulum.getVelocity())*motor.voltage_limit*0.2; // sets 40% of the maximal voltage to the motor in order to swing up
 
     // set the target voltage to the motor
 
-    Serial.print(F("Wheel angle is: "));
-    Serial.print(wheel.getAngle());
-    Serial.print(F(" Pendulum angle is: "));       
-    Serial.print(pendulum_angle);
-    Serial.print(F(" Target voltage is: "));
-    Serial.println(target_voltage);
-    motor.move(target_voltage);
+    
+    //Serial.print(F("Wheel angle is: "));
+    //Serial.print(wheel.getAngle());
+    //Serial.print(F(" Pendulum angle is: "));       
+    //Serial.print(pendulum_angle);
+    //Serial.print(F(" Target voltage is: "));
+    //Serial.println(target_voltage);
+    
 
+    motor.move(target_voltage);
+    
     // restart the counter
     loop_count=0;
   }

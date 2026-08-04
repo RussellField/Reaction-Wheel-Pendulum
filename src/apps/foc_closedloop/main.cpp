@@ -64,7 +64,7 @@ void setup() {
   motor.PID_velocity.output_ramp = 200;   // V/s, limits di/dt
   motor.LPF_velocity.Tf = 0.02f;   // default 0.005 — more filtering
   motor.voltage_limit = 3.0f;      // keep low while tuning
-  motor.phase_resistance = 6.0f;   // measure yours
+  motor.phase_resistance = 6.0f;   // measured
   motor.current_limit = 2.0f;
 
   // add target command M
