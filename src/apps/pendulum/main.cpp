@@ -27,12 +27,12 @@ float controllerLQR(float p_angle, float p_vel, float m_vel){
   // LQR controller u = k*x
   //  - k = [70, 7, 0.3]
   //  - x = [pendulum angle, pendulum velocity, motor velocity]' 
-  float u =  200*p_angle + 7*p_vel + 0.3*m_vel;
+  float u =  -500*p_angle + 10*p_vel - 0.3*m_vel;
   
   // limit the voltage set to the motor
   if(abs(u) > motor.voltage_limit*0.7) u = _sign(u)*motor.voltage_limit*0.7;
   
-  return -u;
+  return u;
 }
 
 
@@ -65,7 +65,7 @@ void setup() {
   // initialize motor
   motor.init();
 
-  motor.voltage_limit = 10; // limit the voltage set to the motor to 10V
+  motor.voltage_limit = 6; // limit the voltage set to the motor to 6V
 
   // align encoder and start FOC
   motor.initFOC();
@@ -95,22 +95,27 @@ void loop() {
     float pendulum_angle = constrainAngle(pendulum.getAngle() - angle_offset);
 
     float target_voltage;
-    if( abs(pendulum_angle) < 0.8 ) // if angle small enough stabilize
+    if( abs(pendulum_angle) < .5 ) // if angle small enough stabilize
       target_voltage = controllerLQR(pendulum_angle, pendulum.getVelocity(), motor.shaftVelocity());
     else // else do swing-up
       
-      target_voltage = _sign(pendulum.getVelocity())*motor.voltage_limit*0.2; // sets 40% of the maximal voltage to the motor in order to swing up
+      target_voltage = _sign(pendulum.getVelocity())*motor.voltage_limit*0.3; // sets 40% of the maximal voltage to the motor in order to swing up
 
     // set the target voltage to the motor
 
-    
-    //Serial.print(F("Wheel angle is: "));
-    //Serial.print(wheel.getAngle());
-    //Serial.print(F(" Pendulum angle is: "));       
-    //Serial.print(pendulum_angle);
-    //Serial.print(F(" Target voltage is: "));
-    //Serial.println(target_voltage);
-    
+    /*
+    Serial.print(F("Wheel angle is: "));
+    Serial.print(wheel.getAngle());
+    Serial.print(F("Wheel velocity is: "));
+    Serial.print(wheel.getVelocity());
+    Serial.print(F(" Pendulum angle is: "));       
+    Serial.print(pendulum_angle);
+    Serial.print(F(" Pendulum velocity is: "));       
+    Serial.print(pendulum.getVelocity());
+
+    Serial.print(F(" Target voltage is: "));
+    Serial.println(target_voltage);
+    */
 
     motor.move(target_voltage);
     
