@@ -25,9 +25,9 @@ float controllerLQR(float p_angle, float p_vel, float m_vel){
   // if angle controllable
   // calculate the control law 
   // LQR controller u = k*x
-  //  - k = [70, 7, 0.3]
-  //  - x = [pendulum angle, pendulum velocity, motor velocity]' 
-  float u =  -500*p_angle + 10*p_vel - 0.3*m_vel;
+  // k = [-400, -7, 0.4]
+  // x = [pendulum angle, pendulum velocity, motor velocity]' 
+  float u =  -400*p_angle -6*p_vel + .4*m_vel;
   
   // limit the voltage set to the motor
   if(abs(u) > motor.voltage_limit*0.7) u = _sign(u)*motor.voltage_limit*0.7;
