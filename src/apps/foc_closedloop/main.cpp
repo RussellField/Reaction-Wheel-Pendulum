@@ -56,14 +56,14 @@ void setup() {
   }
 
   // set the initial motor target
-  motor.target = 2; // Volts 
+  motor.target = 0.0f; // Volts 
 
   motor.PID_velocity.P = 0.05f;    // default is 0.5 — start 10x lower
   motor.PID_velocity.I = 1.0f;     // default is 10
   motor.PID_velocity.D = 0.0f;     // leave at zero
   motor.PID_velocity.output_ramp = 200;   // V/s, limits di/dt
   motor.LPF_velocity.Tf = 0.02f;   // default 0.005 — more filtering
-  motor.voltage_limit = 3.0f;      // keep low while tuning
+  motor.voltage_limit = 9.0f;      // keep low while tuning
   motor.phase_resistance = 6.0f;   // measured
   motor.current_limit = 2.0f;
 

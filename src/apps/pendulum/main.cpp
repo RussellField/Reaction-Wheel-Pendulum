@@ -27,7 +27,7 @@ float controllerLQR(float p_angle, float p_vel, float m_vel){
   // LQR controller u = k*x
   // k = [-400, -7, 0.4]
   // x = [pendulum angle, pendulum velocity, motor velocity]' 
-  float u =  -400*p_angle -6*p_vel + .4*m_vel;
+  float u =  -400*p_angle -7*p_vel + .4*m_vel;
   
   // limit the voltage set to the motor
   if(abs(u) > motor.voltage_limit*0.7) u = _sign(u)*motor.voltage_limit*0.7;
@@ -65,7 +65,7 @@ void setup() {
   // initialize motor
   motor.init();
 
-  motor.voltage_limit = 6; // limit the voltage set to the motor to 6V
+  motor.voltage_limit = 7.5; // limit the voltage set to the motor to 7.5V
 
   // align encoder and start FOC
   motor.initFOC();
@@ -95,11 +95,11 @@ void loop() {
     float pendulum_angle = constrainAngle(pendulum.getAngle() - angle_offset);
 
     float target_voltage;
-    if( abs(pendulum_angle) < .5 ) // if angle small enough stabilize
+    if( abs(pendulum_angle) < .3 ) // if angle small enough stabilize
       target_voltage = controllerLQR(pendulum_angle, pendulum.getVelocity(), motor.shaftVelocity());
     else // else do swing-up
       
-      target_voltage = _sign(pendulum.getVelocity())*motor.voltage_limit*0.3; // sets 40% of the maximal voltage to the motor in order to swing up
+      target_voltage = _sign(pendulum.getVelocity())*motor.voltage_limit*0.3; // sets 30% of the maximal voltage to the motor in order to swing up
 
     // set the target voltage to the motor
 
