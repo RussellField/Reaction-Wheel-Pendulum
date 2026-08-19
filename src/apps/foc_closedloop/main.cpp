@@ -2,7 +2,7 @@
 
 #include <SimpleFOC.h>
 
-MagneticSensorI2C sensor = MagneticSensorI2C(AS5600_I2C);
+MagneticSensorSPI sensor = MagneticSensorSPI(AS5047_SPI, PB9);
 
 BLDCMotor motor = BLDCMotor(7);
 
