@@ -4,8 +4,8 @@
 #include "serial_setup.h"
 #include <SimpleFOC.h>
 
-MagneticSensorI2C sensor5600 = MagneticSensorI2C(AS5600_I2C);
-MagneticSensorSPI sensor5047 = MagneticSensorSPI(10, 14, 0x3FFF);
+MagneticSensorSPI motorSensor = MagneticSensorSPI(AS5047_SPI, PB9);
+MagneticSensorSPI pendulumSensor = MagneticSensorSPI(AS5047_SPI, PB6);
 
 void setup() {
   serialSetup(APP_NAME_STR);
@@ -14,21 +14,21 @@ void setup() {
   SimpleFOCDebug::enable(&Serial);
   
   // initialize encoder sensor hardware
-  sensor5600.init();
-  sensor5047.init();
+  motorSensor.init();
+  pendulumSensor.init();
 
   _delay(1000);
 }
 
 void loop() {
   // update the sensor values 
-  sensor5600.update();
-  sensor5047.update();
+  motorSensor.update();
+  pendulumSensor.update();
   // display the angle and the angular velocity to the terminal
-  Serial.print(F("AS5600 angle: "));
-  Serial.print(sensor5600.getAngle());
-  Serial.print(F(" AS5600 velocity: "));
-  Serial.print(sensor5600.getVelocity());
-  Serial.print(F(" AS5047 angle: "));       
-  Serial.println(sensor5047.getAngle());
+  Serial.print(F("motor angle: "));
+  Serial.print(motorSensor.getAngle());
+  //Serial.print(F(" motor velocity: "));
+  //Serial.print(motorSensor.getVelocity());
+  Serial.print(F(" pendulum angle: "));       
+  Serial.println(pendulumSensor.getAngle());
 }
