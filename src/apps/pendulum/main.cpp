@@ -1,9 +1,14 @@
 #include "serial_setup.h"
-
 #include <SimpleFOC.h>
+#include <SPI.h>
 
-MagneticSensorI2C wheel = MagneticSensorI2C(AS5600_I2C);
-MagneticSensorSPI pendulum = MagneticSensorSPI(10, 14, 0x3FFF);
+SPIClass SPI_3(PC12, PC11, PC10);   // MOSI, MISO, SCK
+
+const int CS_MOTOR = PB9;
+const int CS_PENDULUM = PB6;
+
+MagneticSensorSPI wheel = MagneticSensorSPI(AS5047_SPI, PB9);
+MagneticSensorSPI pendulum = MagneticSensorSPI(AS5047_SPI, PB6);
 
 BLDCMotor motor = BLDCMotor(7);
 
@@ -25,9 +30,9 @@ float controllerLQR(float p_angle, float p_vel, float m_vel){
   // if angle controllable
   // calculate the control law 
   // LQR controller u = k*x
-  // k = [-400, -7, 0.4]
+  // k = [-400, -7, 0.55] -200, -3, 0.2 ] -50 -1 .1
   // x = [pendulum angle, pendulum velocity, motor velocity]' 
-  float u =  -400*p_angle -7*p_vel + .4*m_vel;
+  float u =  -100*p_angle -3*p_vel + .15*m_vel;
   
   // limit the voltage set to the motor
   if(abs(u) > motor.voltage_limit*0.7) u = _sign(u)*motor.voltage_limit*0.7;
@@ -44,11 +49,17 @@ void setup() {
   // comment out if not needed
   SimpleFOCDebug::enable(&Serial);
 
-  // initialise motor encoder hardware
-  wheel.init();
-  
-  // init the pendulum encoder
-  pendulum.init();
+  pinMode(CS_MOTOR, OUTPUT); digitalWrite(CS_MOTOR, HIGH);
+  pinMode(CS_PENDULUM, OUTPUT); digitalWrite(CS_PENDULUM, HIGH);
+
+  SPI.begin();
+  SPI_3.begin();
+
+  // initialize encoder sensor hardware
+  wheel.clock_speed = 1000000;
+  wheel.init(&SPI_3);       // long cable, own bus
+  pendulum.init(&SPI); 
+
   
   // set control loop type to be used
   motor.controller = MotionControlType::torque;
@@ -87,7 +98,7 @@ void loop() {
   motor.loopFOC();
   loop_count++;
   // control loop each 10ms
-  if(loop_count > 10){
+  if(loop_count > 50){
     // updating the pendulum angle sensor
     // NECESSARY for library versions > v2.2 
     pendulum.update();

@@ -1,5 +1,4 @@
 #include "serial_setup.h"
-
 #include <SimpleFOC.h>
 
 BLDCMotor motor = BLDCMotor(7);

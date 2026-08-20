@@ -1,9 +1,8 @@
 #include "serial_setup.h"
-
 #include <SimpleFOC.h>
-
-//testing encoders
 #include <SPI.h>
+
+SPIClass SPI_3(PC12, PC11, PC10);   // MOSI, MISO, SCK
 
 const int CS_MOTOR = PB9;
 const int CS_PENDULUM = PB6;
@@ -30,9 +29,13 @@ void setup() {
   pinMode(CS_MOTOR, OUTPUT); digitalWrite(CS_MOTOR, HIGH);
   pinMode(CS_PENDULUM, OUTPUT); digitalWrite(CS_PENDULUM, HIGH);
 
+  SPI.begin();
+  SPI_3.begin();
+
   // initialize encoder sensor hardware
-  sensor_pendulum.init();
-  sensor_motor.init();
+  sensor_motor.clock_speed = 1000000;
+  sensor_motor.init(&SPI_3);       // long cable, own bus
+  sensor_pendulum.init(&SPI); 
   // link the motor to the sensor
   motor.linkSensor(&sensor_motor);
 
@@ -106,11 +109,4 @@ void loop() {
   motor.move();
 
   command.run();
-
-  //test control frequency
-  //static uint32_t n = 0; static uint32_t t0 = millis();
-  //if (++n >= 1000) {
-  //Serial.print("loop Hz: "); Serial.println(1000000.0f / (millis() - t0));
-  //n = 0; t0 = millis();
-  //}
 }
