@@ -27,8 +27,8 @@ void loop() {
   // display the angle and the angular velocity to the terminal
   Serial.print(F("motor angle: "));
   Serial.print(motorSensor.getAngle());
-  //Serial.print(F(" motor velocity: "));
-  //Serial.print(motorSensor.getVelocity());
+  Serial.print(F(" motor velocity: "));
+  Serial.print(motorSensor.getVelocity());
   Serial.print(F(" pendulum angle: "));       
   Serial.println(pendulumSensor.getAngle());
 }

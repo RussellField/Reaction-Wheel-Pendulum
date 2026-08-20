@@ -2,7 +2,14 @@
 
 #include <SimpleFOC.h>
 
-MagneticSensorSPI sensor = MagneticSensorSPI(AS5047_SPI, PB9);
+//testing encoders
+#include <SPI.h>
+
+const int CS_MOTOR = PB9;
+const int CS_PENDULUM = PB6;
+
+MagneticSensorSPI sensor_motor = MagneticSensorSPI(AS5047_SPI, PB9);
+MagneticSensorSPI sensor_pendulum = MagneticSensorSPI(AS5047_SPI, PB6);
 
 BLDCMotor motor = BLDCMotor(7);
 
@@ -12,16 +19,22 @@ BLDCDriver3PWM driver = BLDCDriver3PWM(5, 6, 3, 8);
 Commander command = Commander(Serial);
 void doMotor(char* cmd) { command.motor(&motor, cmd); }
 
+
+
 void setup() {
   serialSetup(APP_NAME_STR);
   // enable more verbose output for debugging
   // comment out if not needed
   SimpleFOCDebug::enable(&Serial);
   
+  pinMode(CS_MOTOR, OUTPUT); digitalWrite(CS_MOTOR, HIGH);
+  pinMode(CS_PENDULUM, OUTPUT); digitalWrite(CS_PENDULUM, HIGH);
+
   // initialize encoder sensor hardware
-  sensor.init();
+  sensor_pendulum.init();
+  sensor_motor.init();
   // link the motor to the sensor
-  motor.linkSensor(&sensor);
+  motor.linkSensor(&sensor_motor);
 
   // driver config
   // power supply voltage [V]
@@ -31,24 +44,31 @@ void setup() {
     Serial.println("Driver init failed!");
     return;
   }
+
+  // comment out if not needed
+  motor.useMonitoring(Serial);
+
   // link driver
   motor.linkDriver(&driver);
 
   // aligning voltage
-  motor.voltage_sensor_align = 5;
+  motor.voltage_sensor_align = 3;
 
   // set motion control loop to be used
   motor.torque_controller = TorqueControlType::voltage;
   motor.controller = MotionControlType::torque;
 
-  // comment out if not needed
-  motor.useMonitoring(Serial);
+  
 
   // initialize motor
   if(!motor.init()){
     Serial.println("Motor init failed!");
     return;
   }
+
+  Serial.println(motor.voltage_limit);
+  Serial.println(motor.voltage_sensor_align);
+
   // align sensor and start FOC
   if(!motor.initFOC()){
     Serial.println("FOC init failed!");
@@ -56,15 +76,15 @@ void setup() {
   }
 
   // set the initial motor target
-  motor.target = 0.0f; // Volts 
+  motor.target = 1.0f; // Volts 
 
   motor.PID_velocity.P = 0.05f;    // default is 0.5 — start 10x lower
   motor.PID_velocity.I = 1.0f;     // default is 10
   motor.PID_velocity.D = 0.0f;     // leave at zero
   motor.PID_velocity.output_ramp = 200;   // V/s, limits di/dt
   motor.LPF_velocity.Tf = 0.02f;   // default 0.005 — more filtering
-  motor.voltage_limit = 9.0f;      // keep low while tuning
-  motor.phase_resistance = 6.0f;   // measured
+  motor.voltage_limit = 3.0f;      // keep low while tuning
+  motor.phase_resistance = 3.0f;   // measured
   motor.current_limit = 2.0f;
 
   // add target command M
@@ -85,7 +105,6 @@ void loop() {
   // Motion control function
   motor.move();
 
-  // user communication
   command.run();
 
   //test control frequency
