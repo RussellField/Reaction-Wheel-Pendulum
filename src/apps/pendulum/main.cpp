@@ -30,9 +30,9 @@ float controllerLQR(float p_angle, float p_vel, float m_vel){
   // if angle controllable
   // calculate the control law 
   // LQR controller u = k*x
-  // k = [-400, -7, 0.55] -200, -3, 0.2 ] -50 -1 .1
+  // k = [-100, -2, 0.1] - controller gains
   // x = [pendulum angle, pendulum velocity, motor velocity]' 
-  float u =  -100*p_angle -3*p_vel + .15*m_vel;
+  float u =  -100*p_angle -2*p_vel + 0.1*m_vel;
   
   // limit the voltage set to the motor
   if(abs(u) > motor.voltage_limit*0.7) u = _sign(u)*motor.voltage_limit*0.7;
@@ -97,7 +97,7 @@ void loop() {
   // ~1ms 
   motor.loopFOC();
   loop_count++;
-  // control loop each 10ms
+  // control loop each 50ms
   if(loop_count > 50){
     // updating the pendulum angle sensor
     // NECESSARY for library versions > v2.2 
@@ -106,27 +106,13 @@ void loop() {
     float pendulum_angle = constrainAngle(pendulum.getAngle() - angle_offset);
 
     float target_voltage;
-    if( abs(pendulum_angle) < .3 ) // if angle small enough stabilize
+    if( abs(pendulum_angle) < .8 ) // if angle small enough stabilize
       target_voltage = controllerLQR(pendulum_angle, pendulum.getVelocity(), motor.shaftVelocity());
     else // else do swing-up
       
       target_voltage = _sign(pendulum.getVelocity())*motor.voltage_limit*0.3; // sets 30% of the maximal voltage to the motor in order to swing up
 
     // set the target voltage to the motor
-
-    /*
-    Serial.print(F("Wheel angle is: "));
-    Serial.print(wheel.getAngle());
-    Serial.print(F("Wheel velocity is: "));
-    Serial.print(wheel.getVelocity());
-    Serial.print(F(" Pendulum angle is: "));       
-    Serial.print(pendulum_angle);
-    Serial.print(F(" Pendulum velocity is: "));       
-    Serial.print(pendulum.getVelocity());
-
-    Serial.print(F(" Target voltage is: "));
-    Serial.println(target_voltage);
-    */
 
     motor.move(target_voltage);
     
